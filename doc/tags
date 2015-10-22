@@ -1,0 +1,12 @@
+gulp-vim	gulp-vim.txt	/*gulp-vim*
+gulp-vim-contents	gulp-vim.txt	/*gulp-vim-contents*
+gulp-vim-description	gulp-vim.txt	/*gulp-vim-description*
+gulp-vim-extra	gulp-vim.txt	/*gulp-vim-extra*
+gulp-vim-extra:completion	gulp-vim.txt	/*gulp-vim-extra:completion*
+gulp-vim-extra:rvm_hack	gulp-vim.txt	/*gulp-vim-extra:rvm_hack*
+gulp-vim-extra:shell_prompt	gulp-vim.txt	/*gulp-vim-extra:shell_prompt*
+gulp-vim-installation	gulp-vim.txt	/*gulp-vim-installation*
+gulp-vim-manually	gulp-vim.txt	/*gulp-vim-manually*
+gulp-vim-notes	gulp-vim.txt	/*gulp-vim-notes*
+gulp-vim-usage	gulp-vim.txt	/*gulp-vim-usage*
+gulp-vim-using_a_plugin_manager	gulp-vim.txt	/*gulp-vim-using_a_plugin_manager*

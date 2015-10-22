@@ -21,8 +21,8 @@ The difference between those 2 commands is that Gulp executes gulp inside Vim an
 
 Don't use gulp watching tasks with the command Gulp (In case, <Ctrl-C> to stop it), use GulpExt for those tasks.
 
-There is also a command that just shows a list of your gulp task names (Extracted from current gulpfile.js).
 
-:GulpTasks
+:GulpTasks                      => To show a list of your gulp task names (Extracted from current gulpfile.js).
+:GulpFile [gulpfile]         => To specify the gulpfile to use: gulpfile.coffee, gulpfile.babel.js (By default its gulpfile.js).
 
-For extra informations please refer to the README > https://github.com/KabbAmine/gulp-vim/blob/master/README.md
+For the plugin configuration please refer to the included documentation file or the README > https://github.com/KabbAmine/gulp-vim/blob/master/README.md
