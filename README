@@ -17,7 +17,7 @@ Both commands accept 0 or many arguments (Task name(s)), that can be completed u
 
 If no task name was provided, 'default' is used.
 
-The difference between those 2 commands is that Gulp executes gulp inside Vim and GulpExt open an external terminal (The default one via exo-open in Unix and a simple cmd in Windows) then execute gulp.
+The difference between those 2 commands is that Gulp executes gulp inside Vim and GulpExt open an external terminal (The default one via exo-open in Unix and a simple cmd in Windows) or uses Dispatch, then execute gulp.
 
 Don't use gulp watching tasks with the command Gulp (In case, <Ctrl-C> to stop it), use GulpExt for those tasks.
 
