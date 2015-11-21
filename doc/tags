@@ -1,5 +1,6 @@
 gulp-vim	gulp-vim.txt	/*gulp-vim*
 gulp-vim-configuration	gulp-vim.txt	/*gulp-vim-configuration*
+gulp-vim-configuration:ctrlp	gulp-vim.txt	/*gulp-vim-configuration:ctrlp*
 gulp-vim-configuration:dispatch	gulp-vim.txt	/*gulp-vim-configuration:dispatch*
 gulp-vim-configuration:gulpfile	gulp-vim.txt	/*gulp-vim-configuration:gulpfile*
 gulp-vim-configuration:rvm_hack	gulp-vim.txt	/*gulp-vim-configuration:rvm_hack*

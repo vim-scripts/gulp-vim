@@ -1,7 +1,7 @@
 " A simple gulp wrapper for vim
-" Version     : 0.6.2
+" Version     : 0.7.1
 " Creation    : 2015-03-18
-" Last Change : 2015-10-27
+" Last Change : 2015-11-21
 " Maintainer  : Kabbaj Amine <amine.kabb@gmail.com>
 " License     : This file is placed in the public domain.
 
@@ -20,11 +20,15 @@ set cpoptions&vim
 
 " COMMANDS
 " =====================================================================
-" {{{1
+" Main {{{1
 command -nargs=* -complete=custom,s:CompleteTaskNames Gulp :call s:ExecCmd('s:Gulp', 'e', <f-args>)
 command -nargs=* -complete=custom,s:CompleteTaskNames GulpExt :call s:ExecCmd('s:GulpExternal', 'c', <f-args>)
 command GulpTasks :call s:ExecCmd('s:GetTaskNames', 'e')
 command -nargs=? -complete=file GulpFile :call s:Gulpfile(<f-args>)
+" CTRLP {{{1
+if exists(':CtrlP') ==# 2
+	command CtrlPGulp call ctrlp#init(ctrlp#gulp#id())
+endif
 " }}}
 
 " VARIABLES
@@ -43,10 +47,14 @@ endif
 let s:gulpCliFlags = has('gui_running') ? ' --no-color' : ''
 " Rvm hack for unix (Source rvm script file if it exists when using an external terminal) {{{1
 " http://stackoverflow.com/a/8493284
-let s:rvmHack = exists('g:gv_rvm_hack') ? '[[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm" && ' : ''
+let s:rvmHack = exists('g:gv_rvm_hack') ? '[[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm" &&' : ''
 " Use Dispatch plugin (Enabled by default) {{{1
 if !exists('g:gv_use_dispatch')
 	let g:gv_use_dispatch = 1
+endif
+" Gulp command to use with CtrlP {{{1
+if !exists('g:gv_ctrlp_cmd')
+	let g:gv_ctrlp_cmd = 'Gulp'
 endif
 " Return to prompt option {{{1
 if exists('g:gv_return_2_prompt')
@@ -62,16 +70,8 @@ else
 endif
 " Command line for executing external terminal {{{1
 let s:termCmd = {
-			\ 'unix': {
-				\ 'h': 'exo-open --launch TerminalEmulator ',
-				\ 'b': ' bash -c "' . s:rvmHack,
-				\ 't': ' ; ' . s:prompt.unix . '" & '
-			\ },
-			\ 'win32': {
-				\ 'h': 'start cmd ' . s:prompt.win32 . ' ',
-				\ 'b': '',
-				\ 't': ' & '
-			\ }
+			\ 'unix': 'exo-open --launch TerminalEmulator bash -c "' . s:rvmHack . ' %s ; ' . s:prompt.unix . '" &',
+			\ 'win32': 'start cmd ' . s:prompt.win32 . ' %s &'
 		\}
 " }}}
 
@@ -92,16 +92,18 @@ function s:Gulp(...) " {{{1
 
 	let l:tasks = a:0 >=# 1 ? join(a:000, ' ') : 'default'
 	echohl Title | echo 'Execute task(s) -> ' . l:tasks . ':' | echohl None
-	return system('gulp ' . l:tasks . s:gulpCliFlags)
+	let l:flags = ' --gulpfile ' . g:gv_default_gulpfile . ' ' . s:gulpCliFlags
+	return system('gulp ' . l:tasks . l:flags)
 endfunction
 function s:GulpExternal(...) " {{{1
 	" Return gulp execution with given param(s) as task name(s) in external terminal.
 
 	let l:tasks = a:0 >=# 1 ? join(a:000, ' ') : 'default'
+	let l:flags = ' --gulpfile ' . g:gv_default_gulpfile
 	if g:gv_use_dispatch && exists(':Start')
-		return printf('Start! gulp %s', l:tasks)
+		return printf('Start! gulp %s %s', l:tasks, l:flags)
 	else
-		return 'silent :!' . s:termCmd[s:os].h . s:termCmd[s:os].b . 'gulp ' . l:tasks . s:termCmd[s:os].t
+		return printf('silent :!%s gulp %s %s', s:termCmd[s:os], l:tasks, l:flags)
 	endif
 endfunction
 function s:GetTaskNames() " {{{1
