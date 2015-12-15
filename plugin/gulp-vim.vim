@@ -1,7 +1,7 @@
 " A simple gulp wrapper for vim
-" Version     : 0.7.1
+" Version     : 0.8.0
 " Creation    : 2015-03-18
-" Last Change : 2015-11-21
+" Last Change : 2015-12-15
 " Maintainer  : Kabbaj Amine <amine.kabb@gmail.com>
 " License     : This file is placed in the public domain.
 
@@ -21,13 +21,13 @@ set cpoptions&vim
 " COMMANDS
 " =====================================================================
 " Main {{{1
-command -nargs=* -complete=custom,s:CompleteTaskNames Gulp :call s:ExecCmd('s:Gulp', 'e', <f-args>)
-command -nargs=* -complete=custom,s:CompleteTaskNames GulpExt :call s:ExecCmd('s:GulpExternal', 'c', <f-args>)
-command GulpTasks :call s:ExecCmd('s:GetTaskNames', 'e')
-command -nargs=? -complete=file GulpFile :call s:Gulpfile(<f-args>)
+command! -nargs=* -complete=custom,s:CompleteTaskNames Gulp :call s:ExecCmd('s:Gulp', 'e', <f-args>)
+command! -nargs=* -complete=custom,s:CompleteTaskNames GulpExt :call s:ExecCmd('s:GulpExternal', 'c', <f-args>)
+command! GulpTasks :call s:ExecCmd('s:GetTaskNames', 'e')
+command! -nargs=? -complete=file GulpFile :call s:Gulpfile(<f-args>)
 " CTRLP {{{1
 if exists(':CtrlP') ==# 2
-	command CtrlPGulp call ctrlp#init(ctrlp#gulp#id())
+	command! CtrlPGulp call ctrlp#init(ctrlp#gulp#id())
 endif
 " }}}
 
@@ -47,7 +47,7 @@ endif
 let s:gulpCliFlags = has('gui_running') ? ' --no-color' : ''
 " Rvm hack for unix (Source rvm script file if it exists when using an external terminal) {{{1
 " http://stackoverflow.com/a/8493284
-let s:rvmHack = exists('g:gv_rvm_hack') ? '[[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm" &&' : ''
+let s:rvmHack = exists('g:gv_rvm_hack') && g:gv_rvm_hack && has('unix') ? '[[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm " &&' : ''
 " Use Dispatch plugin (Enabled by default) {{{1
 if !exists('g:gv_use_dispatch')
 	let g:gv_use_dispatch = 1
@@ -55,6 +55,10 @@ endif
 " Gulp command to use with CtrlP {{{1
 if !exists('g:gv_ctrlp_cmd')
 	let g:gv_ctrlp_cmd = 'Gulp'
+endif
+" Gulp command to use with Unite {{{1
+if !exists('g:gv_unite_cmd')
+	let g:gv_unite_cmd = 'Gulp'
 endif
 " Return to prompt option {{{1
 if exists('g:gv_return_2_prompt')
@@ -77,7 +81,7 @@ let s:termCmd = {
 
 " FUNCTIONS
 " =====================================================================
-function s:Gulpfile(...) "{{{1
+function! s:Gulpfile(...) abort "{{{1
 	let l:gf = exists('a:1') ? a:1 : 'gulpfile.js'
 	if l:gf !~# '^gulpfile'
 		echohl Error | echo l:gf . ' is not a valid gulpfile' | echohl None
@@ -87,26 +91,30 @@ function s:Gulpfile(...) "{{{1
 		return filereadable(getcwd() . s:sep . l:gf)
 	endif
 endfunction
-function s:Gulp(...) " {{{1
+function! s:Gulp(...) abort " {{{1
 	" Return gulp execution with given param(s) as task name(s) (By default is 'default' :D)
 
 	let l:tasks = a:0 >=# 1 ? join(a:000, ' ') : 'default'
 	echohl Title | echo 'Execute task(s) -> ' . l:tasks . ':' | echohl None
 	let l:flags = ' --gulpfile ' . g:gv_default_gulpfile . ' ' . s:gulpCliFlags
-	return system('gulp ' . l:tasks . l:flags)
+	return system(s:rvmHack . 'gulp ' . l:tasks . l:flags)
 endfunction
-function s:GulpExternal(...) " {{{1
+function! s:GulpExternal(...) abort " {{{1
 	" Return gulp execution with given param(s) as task name(s) in external terminal.
 
 	let l:tasks = a:0 >=# 1 ? join(a:000, ' ') : 'default'
 	let l:flags = ' --gulpfile ' . g:gv_default_gulpfile
-	if g:gv_use_dispatch && exists(':Start')
-		return printf('Start! gulp %s %s', l:tasks, l:flags)
+	let l:gc = printf('%s gulp %s %s', s:rvmHack, l:tasks, l:flags)
+	if exists('g:gv_custom_cmd')
+		let l:gc = 'cd ' . getcwd() . ' && ' . l:gc
+		return printf(g:gv_custom_cmd, shellescape(l:gc))
+	elseif g:gv_use_dispatch && exists(':Start')
+		return printf('Start! %s', l:gc)
 	else
-		return printf('silent :!%s gulp %s %s', s:termCmd[s:os], l:tasks, l:flags)
+		return printf('silent :!%s', printf(s:termCmd[s:os], l:gc))
 	endif
 endfunction
-function s:GetTaskNames() " {{{1
+function! s:GetTaskNames() abort " {{{1
 	" Return task names as strings from gulpfile
 
 	let l:tasks = []
@@ -123,7 +131,7 @@ function s:GetTaskNames() " {{{1
 
 endfunction
 " }}}
-function s:ExecCmd(funName, action, ...) " {{{1
+function! s:ExecCmd(funName, action, ...) abort " {{{1
 	" Automate the vim command creation:
 	"	- Check if gulpfile is readable
 	"	- Echo or execute when needed
@@ -140,7 +148,7 @@ function s:ExecCmd(funName, action, ...) " {{{1
 		echohl Error | echo 'No valid gulpfile in the current directory' | echohl None
 	endif
 endfunction
-function s:CompleteTaskNames(A, L, P) " {{{1
+function! s:CompleteTaskNames(A, L, P) abort " {{{1
 	if s:Gulpfile(g:gv_default_gulpfile)
 		return s:GetTaskNames()
 	endif

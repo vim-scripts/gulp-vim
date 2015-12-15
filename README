@@ -2,8 +2,18 @@ This is a mirror of http://www.vim.org/scripts/script.php?script_id=5144
 
 This plugin is a simple gulp (gulpjs.com) wrapper for vim (Tested on GNU/Linux and Windows).
 
+Features:
+    * Run Gulp inside Vim.
+    * Run Gulp in the backgound using an external terminal or a vim plugin.
+    * List your gulp tasks.
+    * Support different gulpfiles (.js, .babel.js, .coffee).
+    * CtrlP integration.
+    * Unite source.
+
 Check the official repository for more details > https://github.com/KabbAmine/gulp-vim
 Please rate this plugin if you find it useful (Or useless ;) ).
+
+P.S: Starting from version 0.8.0 the plugin uses semantic versionning 2.0.0.
 
 Usage
 =====
@@ -17,13 +27,20 @@ Both commands accept 0 or many arguments (Task name(s)), that can be completed u
 
 If no task name was provided, 'default' is used.
 
-The difference between those 2 commands is that Gulp executes gulp inside Vim and GulpExt open an external terminal (The default one via exo-open in Unix and a simple cmd in Windows) or uses Dispatch, then execute gulp.
+The difference between those 2 commands is that Gulp executes gulp inside Vim and GulpExt open an external terminal:
+    * The default one via exo-open in GNU/Linux and a simple cmd in Windows.
+    * Or use Dispatch if its installed.
+    * Or use a defined user command.
+Then execute gulp.
 
 Don't use gulp watching tasks with the command Gulp (In case, <Ctrl-C> to stop it), use GulpExt for those tasks.
 
 Using:
 :CtrlpGulp
-You can execute gulp tasks with CtrlP (This command is provided only if ctrlp is installed). 
+You can execute gulp tasks with CtrlP (This command is provided only if ctrlp is installed).
+
+A Unite source is also provided:
+:Unite -buffer-name=gulp gulp
 
 :GulpTasks                      => To show a list of your gulp task names (Extracted from current gulpfile.js).
 :GulpFile [gulpfile]         => To specify the gulpfile to use: gulpfile.coffee, gulpfile.babel.js (By default its gulpfile.js).
