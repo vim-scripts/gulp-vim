@@ -3,6 +3,31 @@ CHANGELOG
 
 Starting from version `0.8.0` the plugin uses [semantic versionning 2.0.0](http://semver.org/).
 
+0.8.3 <small>(2015-12-21)</small>
+------------------------------
+
+* Fix: Get focus back only when vim window id is different from 0
+
+------------------------------
+
+0.8.2 <small>(2015-12-21)</small>
+------------------------------
+
+* Refactoring
+* Improve custom command process, `g:gv_custom_cmd` can now escape double quotes if needed
+* Set back focus to the editor after using `GulpExt` (Need `wmctrl` & is Unix only)
+* Update screenshots and documentation
+
+------------------------------
+
+0.8.1 <small>(2015-12-16)</small>
+------------------------------
+
+* Fix rvm_hack value
+* Add more informations in the README.
+
+------------------------------
+
 0.8.0 <small>(2015-12-15)</small>
 ------------------------------
 

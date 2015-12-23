@@ -3,8 +3,9 @@ This is a mirror of http://www.vim.org/scripts/script.php?script_id=5144
 This plugin is a simple gulp (gulpjs.com) wrapper for vim (Tested on GNU/Linux and Windows).
 
 Features:
-    * Run Gulp inside Vim.
-    * Run Gulp in the backgound using an external terminal or a vim plugin.
+    * Run gulp inside Vim.
+    * Run gulp in the backgound using an external terminal without losing focus.
+    * Run gulp using a custom shell or vim command.
     * List your gulp tasks.
     * Support different gulpfiles (.js, .babel.js, .coffee).
     * CtrlP integration.
