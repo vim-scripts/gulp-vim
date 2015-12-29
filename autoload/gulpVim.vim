@@ -1,5 +1,5 @@
 " Creation    : 2015-12-20
-" Last Change : 2015-12-21
+" Last Change : 2015-12-29
 
 " VARIABLES
 " =====================================================================
@@ -8,7 +8,7 @@ let s:os = {
 			\ 'name'      : (has('unix') ? 'unix' : 'win32'),
 			\ 'sep'       : (has('unix') ? '/'    : '\'),
 			\ 'and'       : (has('unix') ? '&&'   : '&'),
-			\ 'escDQuote' : (has('unix') ? '\\"'  : '\"')
+			\ 'root'      : (has('unix') ? '^/'   : '^\a:')
 		\ }
 " Default gulpfile {{{1
 if !exists('g:gv_default_gulpfile')
@@ -41,25 +41,31 @@ let s:shell.prompt = (exists('g:gv_return_2_prompt')) ?
 			\ {'unix': '', 'win32': ' /c'}
 " Full shell command for executing external terminal
 let s:shell.cmd = {
-			\ 'unix' : 'exo-open --launch TerminalEmulator bash -c "' . escape(s:shell.rvm, s:os.escDQuote) . ' %s ; ' . s:shell.prompt.unix . '" &',
+			\ 'unix' : 'exo-open --launch TerminalEmulator bash -c "' . s:shell.rvm . ' %s ; ' . s:shell.prompt.unix . '" &',
 			\ 'win32': 'start cmd ' . s:shell.prompt.win32 . ' %s &'
 		\ }
 " }}}
 
 " FUNCTIONS
 " =====================================================================
-function! gulpVim#CheckGulpFile(...) abort "{{{1
-	" Return 0 or 1 depending if the gulpfile a:1 (gulpfile.js by default)
-	" is readable.
+function! gulpVim#GulpFile(...) abort "{{{1
 
 	let l:gf = exists('a:1') ? a:1 : 'gulpfile.js'
-	if l:gf !~# '^gulpfile'
+	if l:gf !~# '\v^.*gulpfile\.(((babel\.)?js)|(coffee))$'
 		echohl Error | echo l:gf . ' is not a valid gulpfile' | echohl None
 		return 0
-	else
-		let g:gv_default_gulpfile = l:gf
-		return filereadable(getcwd() . s:os.sep . l:gf)
 	endif
+	" First check if the gulpfile was given with a path
+	if filereadable(l:gf)
+		let g:gv_default_gulpfile = l:gf
+		return 1
+	endif
+	let l:tgf = findfile(l:gf, '.;')
+	if !empty(l:tgf)
+		let g:gv_default_gulpfile = l:tgf
+		return 1
+	endif
+	return 0
 endfunction
 function! gulpVim#SetCustomCommand(custom, gulp) abort " {{{1
 	" Return parsed custom command (If custom[1] == 1, escape double
@@ -73,7 +79,7 @@ function! gulpVim#SetCustomCommand(custom, gulp) abort " {{{1
 		if a:custom[1] ==# 0
 			return printf(a:custom[0], l:gc)
 		elseif a:custom[1] ==# 1
-			return printf(a:custom[0], escape(l:gc, s:os.escDQuote))
+			return printf(a:custom[0], escape(l:gc, '"'))
 		endif
 	endif
 endfun
@@ -82,7 +88,7 @@ function! gulpVim#Execute(...) abort " {{{1
 
 	let l:tasks = a:0 >=# 1 ? join(a:000, ' ') : 'default'
 	echohl Title | echo 'Execute task(s) -> ' . l:tasks . ':' | echohl None
-	let l:flags = printf('--gulpfile %s %s', g:gv_default_gulpfile, s:shell.flags)
+	let l:flags = printf('--gulpfile %s %s', shellescape(g:gv_default_gulpfile), s:shell.flags)
 	return system(printf('%s gulp %s %s', s:shell.rvm, l:tasks, l:flags))
 endfunction
 function! gulpVim#Run(...) abort " {{{1
@@ -90,7 +96,7 @@ function! gulpVim#Run(...) abort " {{{1
 	" in external terminal.
 
 	let l:tasks = a:0 >=# 1 ? join(a:000, ' ') : 'default'
-	let l:flags = '--gulpfile ' . g:gv_default_gulpfile
+	let l:flags = '--gulpfile ' . shellescape(g:gv_default_gulpfile)
 	let l:focus = has('unix') && executable('wmctrl') && v:windowid !=# 0 ?
 				\ 'wmctrl -ia ' . v:windowid . ';' : ''
 	let l:gc = printf('%s %s gulp %s %s', l:focus, s:shell.rvm, l:tasks, l:flags)
@@ -101,23 +107,29 @@ function! gulpVim#Run(...) abort " {{{1
 		return printf('Start! %s', l:gc)
 	" ===========================================
 	else
-		let l:gc = printf('%s gulp %s %s', l:focus, l:tasks, l:flags)
+		let l:gc = escape(printf('%s gulp %s %s', l:focus, l:tasks, l:flags), '"')
 		return printf('silent :!%s', printf(s:shell.cmd[s:os.name], l:gc))
 	endif
 endfunction
-function! gulpVim#GetTasks() abort " {{{1
+function! gulpVim#GetTasks(...) abort " {{{1
 	" Return task names as strings from gulpfile
+	" Echo msg if a:1 exists
 
 	let l:tasks = []
+	if !gulpVim#GulpFile(g:gv_default_gulpfile)
+		return 0
+	endif
 	for l:line in readfile(g:gv_default_gulpfile)
-		if l:line =~# '^gulp.task'
+		if l:line =~# '\v^\s?gulp.task'
 			" Get task name & add it to a list of tasks
 			let l:task = l:line[match(l:line, "'", 0, 1) + 1 : match(l:line, "'", 0, 2) - 1]
 			call add(l:tasks, l:task)
 		endif
 	endfor
-	let l:taskMsg = len(l:tasks) ==# 1 ? '(1 task)' : '(' . len(l:tasks) . ' tasks)'
-	echohl Title | echo g:gv_default_gulpfile . ' ' . l:taskMsg . ':' | echohl None
+	if exists('a:1')
+		let l:taskMsg = len(l:tasks) ==# 1 ? '(1 task)' : '(' . len(l:tasks) . ' tasks)'
+		echohl Title | echo '"'. g:gv_default_gulpfile . '" ' . l:taskMsg . ':' | echohl None
+	endif
 	return join(l:tasks, "\n")
 endfunction
 function! gulpVim#Call(funcRef, action, ...) abort " {{{1
@@ -126,7 +138,7 @@ function! gulpVim#Call(funcRef, action, ...) abort " {{{1
 	"	- Echo or execute depending of a:action
 
 	let l:args = exists('a:000') ? a:000 : []
-	if gulpVim#CheckGulpFile(g:gv_default_gulpfile)
+	if gulpVim#GulpFile(g:gv_default_gulpfile)
 		if a:action ==# 'e'
 			echo call(a:funcRef, l:args)
 		else

@@ -1,6 +1,6 @@
 This is a mirror of http://www.vim.org/scripts/script.php?script_id=5144
 
-This plugin is a simple gulp (gulpjs.com) wrapper for vim (Tested on GNU/Linux and Windows).
+This plugin is a simple gulp (gulpjs.com) wrapper for vim.
 
 Features:
     * Run gulp inside Vim.
@@ -10,6 +10,7 @@ Features:
     * Support different gulpfiles (.js, .babel.js, .coffee).
     * CtrlP integration.
     * Unite source.
+    * Works on GNU/Linux and Windows.
 
 Check the official repository for more details > https://github.com/KabbAmine/gulp-vim
 Please rate this plugin if you find it useful (Or useless ;) ).
@@ -43,7 +44,7 @@ You can execute gulp tasks with CtrlP (This command is provided only if ctrlp is
 A Unite source is also provided:
 :Unite -buffer-name=gulp gulp
 
-:GulpTasks                      => To show a list of your gulp task names (Extracted from current gulpfile.js).
-:GulpFile [gulpfile]         => To specify the gulpfile to use: gulpfile.coffee, gulpfile.babel.js (By default its gulpfile.js).
+:GulpTasks                                              => To show a list of your gulp task names (Extracted from current gulpfile.js).
+:GulpFile [gulpfile || path/to/gulpfile]     => To specify the gulpfile to use: gulpfile.coffee, gulpfile.babel.js (By default its gulpfile.js).
 
 For the plugin configuration please refer to the included documentation file or the README > https://github.com/KabbAmine/gulp-vim/blob/master/README.md
